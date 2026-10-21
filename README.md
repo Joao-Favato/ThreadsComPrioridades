@@ -18,3 +18,15 @@ No segundo gráfico, a Thread A tem maior prioridade, por isso começa executand
 <img width="400" height="204" alt="Grafico" src="evidencias\Gráfico 3.png" /> 
 
 No gráfico 3, quem tem maior prioridade é B, por isso ele começa executando e não tem nenhuma interrupção. Ao final de sua execução, a thread A entra em ação, mas logo em seguida há um espaço vazio na CPU pois as duas threads estão em sleep. Tal ciclo se repete continuamente.
+
+## Remoção do k_sleep() nas threads
+
+Ao remover o sleep de uma das threads, ela passou a ser executada constantemente, sem deixar espaço para a outra (a não ser que essa outra tenha prioridade maior). Ao longo dos testes, percebi que, quando removemos o sleep de A, quando a thread B (de prioridade maior) interrompia A, na maioria das vezes a cor ficava misturada, mas em algumas pequenas oportunidades ficava só vermelha, isso porque a thread B estava interrompendo A em momentos diferentes.
+
+## Threads com prioridades iguais
+
+Ao realizar testes de threads com prioridades iguais, verifiquei no meu código que a que era executada primeira era a que tem o nome que vem primeiro na ordem alfabética. Bastou intercambiar os nomes das duas threads no seu define que a cor de início no microcontrolador mudava.
+
+## Threads cooperativas
+
+Verificando o comportamento das threads cooperativas ao longo de testes, atestei que uma thread cooperativa não pode ser interrompida. Em adição a isso, uma thread cooperativa ainda pode interromper uma thread com prioridade maior que 0, já que elas se comportam como a maior prioridade.

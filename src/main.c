@@ -11,14 +11,11 @@ static const struct gpio_dt_spec ledA = GPIO_DT_SPEC_GET(LED_A_NODE, gpios);
 static const struct gpio_dt_spec ledB = GPIO_DT_SPEC_GET(LED_B_NODE, gpios);
 
 // --- Prioridades e tempos ---
-#define PRIO_THREAD_A 2   // Maior prioridade (número menor)
-#define PRIO_THREAD_B 1   // Menor prioridade
+#define PRIO_THREAD_A -1   // Maior prioridade (número menor)
+#define PRIO_THREAD_B -1   // Menor prioridade
 #define TEMPO_A_MS   1000   // Thread A dorme
 #define TEMPO_B_MS   1000   // Thread B dorme
 
-// ----------------------------------------------------
-// THREAD A — Tarefa curta, alta prioridade
-// ----------------------------------------------------
 void thread_A(void *p1, void *p2, void *p3)
 {
     while (1) {
@@ -38,15 +35,11 @@ void thread_A(void *p1, void *p2, void *p3)
 
         printk("Tempo decorrido (Thread A): %llu ms e terminou em %llu ms.\n", end_msA - start_msA, end_msA);
    
-        k_msleep(TEMPO_A_MS);       // Dorme — libera CPU
-
-
+        k_msleep(TEMPO_A_MS);
     }
 }
 
-// ----------------------------------------------------
-// THREAD B — Tarefa longa, baixa prioridade
-// ----------------------------------------------------
+
 void thread_B(void *p1, void *p2, void *p3)
 {
     while (1) {
@@ -82,7 +75,7 @@ K_THREAD_DEFINE(b_tid, 512, thread_B, NULL, NULL, NULL,
                 PRIO_THREAD_B, 0, 0);
 
 // ----------------------------------------------------
-// Função principal
+// Função principal//
 // ----------------------------------------------------
 void main(void)
 {
@@ -94,8 +87,8 @@ void main(void)
     gpio_pin_configure_dt(&ledB, GPIO_OUTPUT_INACTIVE);
 
     printk("=== Demonstração de Preempção com LEDs ===\n");
-    printk("Thread A (vermelho): prioridade %d\n", PRIO_THREAD_A);
-    printk("Thread B (verde): prioridade %d\n", PRIO_THREAD_B);
+    printk("Thread A (verde): prioridade %d\n", PRIO_THREAD_A);
+    printk("Thread B (vermelho): prioridade %d\n", PRIO_THREAD_B);
 
     while (1) {
         k_sleep(K_FOREVER); // Main dorme para liberar CPU.
