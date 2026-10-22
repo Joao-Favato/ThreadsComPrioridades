@@ -42,3 +42,11 @@ Como já havia sido verificado durante os testes na parte da remoção do k_slee
 A fim de usar o botão para demonstrar o funcionamento das interrupções, primeiramente foram feitos testes para verificar seu funcionamento. A seguir está a evidência através do terminal.
 
 <img width="400" height="204" alt="Grafico" src="evidencias\FuncionamentoBotao.gif" /> 
+
+## Botão com interrupção
+
+Depois de verificar o funcionamento do botão, ele foi implementado no código anterior como interrupção nas threads. Para evidenciar a interrupção, o aperto do botão foi configurado para dar um "toggle" no led azul, que não havia sido utilizado nesse projeto. Assim, no vídeo é possível observar a mudança de cor quando o botão é apertado, ficando rosa ao misturar com o vermelho e azul quando sozinho.
+
+<img width="400" height="204" alt="Grafico" src="evidencias\BotaoComInterrupção.gif" /> 
+
+**Foi adicionado um filtro de debounce na interrupção do botão, que ignora acionamentos com menos de 200 ms de intervalo, garantindo que uma simples esbarrada no botão não provoque mudanças no estado.
