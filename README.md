@@ -36,3 +36,9 @@ Verificando o comportamento das threads cooperativas ao longo de testes, atestei
 Como já havia sido verificado durante os testes na parte da remoção do k_sleep(), quando uma thread não tem esse delay de um período inativo, e ainda for a thread com maior prioridade, seu código será rodado continuamente sem dar espaço para outras threads. Tal fenonômeno é conhecido como Inanição de Tarefas (Starvation / CPU Starvation).
 
 <img width="400" height="204" alt="Grafico" src="evidencias\starvation.gif" /> 
+
+## Utilização do botão
+
+A fim de usar o botão para demonstrar o funcionamento das interrupções, primeiramente foram feitos testes para verificar seu funcionamento. A seguir está a evidência através do terminal.
+
+<img width="400" height="204" alt="Grafico" src="evidencias\FuncionamentoBotao.gif" /> 

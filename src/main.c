@@ -1,4 +1,4 @@
-#include <kernel.h>
+/*#include <kernel.h>
 #include <drivers/gpio.h>
 #include <sys/printk.h>
 #include <device.h>
@@ -6,9 +6,11 @@
 // --- Configuração de LEDs via DeviceTree ---
 #define LED_A_NODE DT_ALIAS(led0)  // LED verde
 #define LED_B_NODE DT_ALIAS(led2)  // LED vermelho
+#define LED_C_NODE DT_ALIAS(led1)  // LED azul 
 
 static const struct gpio_dt_spec ledA = GPIO_DT_SPEC_GET(LED_A_NODE, gpios);
 static const struct gpio_dt_spec ledB = GPIO_DT_SPEC_GET(LED_B_NODE, gpios);
+static const struct gpio_dt_spec ledC = GPIO_DT_SPEC_GET(LED_C_NODE, gpios);
 
 // --- Prioridades e tempos ---
 #define PRIO_THREAD_A  1   // Maior prioridade (número menor)
@@ -79,11 +81,18 @@ K_THREAD_DEFINE(b_tid, 512, thread_B, NULL, NULL, NULL,
 void main(void)
 {
     // Inicializa GPIOs dos LEDs
-    if (!device_is_ready(ledA.port) || !device_is_ready(ledB.port)) {
+    if (!device_is_ready(ledA.port) || !device_is_ready(ledB.port) || !device_is_ready(ledC.port)) {
         return;
     }
     gpio_pin_configure_dt(&ledA, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&ledB, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_configure_dt(&ledC, GPIO_OUTPUT_INACTIVE);
+
+    gpio_pin_configure_dt(&button, GPIO_INPUT | GPIO_PULL_UP);
+// Configurar interrupção na borda de descida
+    gpio_pin_interrupt_configure_dt(&button, GPIO_INT_EDGE_FALLING);
+    gpio_init_callback(&button_cb_data, button_isr, BIT(button.pin));
+    gpio_add_callback(button.port, &button_cb_data);
 
     printk("=== Demonstração de Preempção com LEDs ===\n");
     printk("Thread A (verde): prioridade %d\n", PRIO_THREAD_A);
@@ -91,5 +100,36 @@ void main(void)
 
     while (1) {
         k_sleep(K_FOREVER); // Main dorme para liberar CPU.
+    }
+}
+    */
+
+#include <kernel.h>
+#include <drivers/gpio.h>
+
+// Configuração do botão
+#define BUTTON_NODE DT_NODELABEL(user_button_0)
+static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(BUTTON_NODE, gpios);
+
+void main(void)
+{
+    printk("=== Exemplo de Botão com Pull-up ===\n");
+    printk("Pressione o botão na placa FRDM-KL25Z\n");
+    
+    
+    // Configurar botão como entrada COM pull-up forçado
+    gpio_pin_configure_dt(&button, GPIO_INPUT | GPIO_PULL_UP);
+    
+    printk("Botão configurado: Porto %s, Pino %d (COM PULL-UP)\n", 
+           button.port->name, button.pin);
+    
+    while (1) {
+        // Ler estado do botão
+        int button_state = gpio_pin_get_dt(&button);
+        
+        printk("Botao: %s (Estado = %d)\n", 
+               button_state ? "PRESSIONADO" : "SOLTO", button_state);
+        
+        k_sleep(K_MSEC(300));
     }
 }
