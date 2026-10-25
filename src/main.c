@@ -1,7 +1,9 @@
 #include <kernel.h>
 #include <drivers/gpio.h>
-#include <sys/printk.h>
+#include <logging/log.h>
 #include <device.h>
+
+LOG_MODULE_REGISTER(threads_prioridade, LOG_LEVEL_INF);
 
 // --- Configuração de LEDs via DeviceTree ---
 #define LED_A_NODE DT_ALIAS(led0)  // LED verde
@@ -24,10 +26,10 @@ static int64_t last_time = 0;
 void thread_A(void *p1, void *p2, void *p3)
 {
     while (1) {
-        uint64_t start_msA, end_msA;
+        uint32_t start_msA, end_msA;
 
         start_msA = k_uptime_get();
-        printk("Thread A iniciou em %llu ms.\n", start_msA);
+        LOG_INF("Thread A iniciou em %u ms.", (unsigned long long)start_msA);
 
         gpio_pin_set_dt(&ledA, 1);  // Liga LED verde
 
@@ -38,7 +40,9 @@ void thread_A(void *p1, void *p2, void *p3)
 
         end_msA = k_uptime_get();  // tempo após o delay
 
-        printk("Tempo decorrido (Thread A): %llu ms e terminou em %llu ms.\n", end_msA - start_msA, end_msA);
+        LOG_INF("Tempo decorrido (Thread A): %u ms e terminou em %u ms.",
+                (unsigned long long)(end_msA - start_msA),
+                (unsigned long long)end_msA);
         
          k_msleep(TEMPO_A_MS); 
     }
@@ -48,10 +52,10 @@ void thread_A(void *p1, void *p2, void *p3)
 void thread_B(void *p1, void *p2, void *p3)
 {
     while (1) {
-        uint64_t start_msB, end_msB;
+        uint32_t start_msB, end_msB;
 
         start_msB = k_uptime_get();
-        printk("Thread B iniciou em %llu ms.\n", start_msB);
+        LOG_INF("Thread B iniciou em %u ms.", (unsigned long long)start_msB);
 
         gpio_pin_set_dt(&ledB, 1);  // Liga LED vermelho
 
@@ -65,7 +69,9 @@ void thread_B(void *p1, void *p2, void *p3)
         gpio_pin_set_dt(&ledB, 0);  // Desliga LED vermelho
 
         end_msB = k_uptime_get();
-        printk("Tempo decorrido (Thread B): %llu ms e terminou em %llu ms.\n", end_msB - start_msB, end_msB);
+        LOG_INF("Tempo decorrido (Thread B): %u ms e terminou em %u ms.",
+                (unsigned long long)(end_msB - start_msB),
+                (unsigned long long)end_msB);
 
         k_msleep(TEMPO_B_MS);       // Dorme um pouco
     }
@@ -73,11 +79,13 @@ void thread_B(void *p1, void *p2, void *p3)
 
 void button_isr(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-int64_t now = k_uptime_get();
+    int64_t now = k_uptime_get();
 
     if ((now - last_time) > 200) {
         gpio_pin_toggle_dt(&ledC);
         last_time = now;
+        LOG_INF("Interrupcao do botao: LED azul alternado em %lld ms.",
+                (long long)now);
     }
 }
 
@@ -85,9 +93,9 @@ int64_t now = k_uptime_get();
 // ----------------------------------------------------
 // Definição das threads
 // ----------------------------------------------------
-K_THREAD_DEFINE(a_tid, 512, thread_A, NULL, NULL, NULL,
+K_THREAD_DEFINE(a_tid, 1024, thread_A, NULL, NULL, NULL,
                 PRIO_THREAD_A, 0, 0);
-K_THREAD_DEFINE(b_tid, 512, thread_B, NULL, NULL, NULL,
+K_THREAD_DEFINE(b_tid, 1024, thread_B, NULL, NULL, NULL,
                 PRIO_THREAD_B, 0, 0);
 
 // ----------------------------------------------------
@@ -99,23 +107,23 @@ void main(void)
     if (!device_is_ready(ledA.port) || !device_is_ready(ledB.port) || !device_is_ready(ledC.port)) {
         return;
     }
+
     gpio_pin_configure_dt(&ledA, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&ledB, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&ledC, GPIO_OUTPUT_INACTIVE);
 
     gpio_pin_configure_dt(&button, GPIO_INPUT | GPIO_PULL_UP);
-// Configurar interrupção na borda de descida
-    gpio_pin_interrupt_configure_dt(&button, GPIO_INT_EDGE_FALLING);
     gpio_init_callback(&button_cb_data, button_isr, BIT(button.pin));
     gpio_add_callback(button.port, &button_cb_data);
+    // Habilita a interrupcao depois que o callback ja esta registrado.
+    gpio_pin_interrupt_configure_dt(&button, GPIO_INT_EDGE_FALLING);
 
-    printk("=== Demonstração de Preempção com LEDs ===\n");
-    printk("Thread A (verde): prioridade %d\n", PRIO_THREAD_A);
-    printk("Thread B (vermelho): prioridade %d\n", PRIO_THREAD_B);
+    LOG_INF("=== Demonstração de Preempção com LEDs ===");
+    LOG_INF("Thread A (verde): prioridade %d, tempo de suspensão: %d ms", PRIO_THREAD_A, TEMPO_A_MS);
+    LOG_INF("Thread B (vermelho): prioridade %d, tempo de suspensão: %d ms", PRIO_THREAD_B, TEMPO_B_MS);
 
     while (1) {
         k_sleep(K_FOREVER); // Main dorme para liberar CPU.
     }
 }
     
-

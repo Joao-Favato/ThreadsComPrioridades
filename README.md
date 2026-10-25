@@ -50,3 +50,11 @@ Depois de verificar o funcionamento do botão, ele foi implementado no código a
 <img width="400" height="204" alt="Grafico" src="evidencias\BotaoComInterrupção.gif" /> 
 
 **Foi adicionado um filtro de debounce na interrupção do botão, que ignora acionamentos com menos de 200 ms de intervalo, garantindo que uma simples esbarrada no botão não provoque mudanças no estado.
+
+## Implementação do Logging
+
+Nessa etapa, substituiu-se os comandos de printk por comandos com logging. Algumas das vantagens do logging, como pode ser visto no print, é que ele já fornece timestamps com precisão, e, além disso, também é possível usar comandos LOG_INF, LOG_DBG, LOG_ERR para diferenciar cada uma das mensagens no monitor serial. O logging é mais recomendado que o uso do printk pois afeta menos os tempos de execução das tarefas, que podem ficar maiores ao se adicionar muitos printk. Já o printf, da biblioteca padrão C, não é recomendado por conta de seu alto custo computacional e ser um texto puro formatado menos flexível que os outros. Já o debug também é bastante útil, permitindo a análise do código em tempo de execução para analisar valores de funções e eventuais erros de alocação na memória.
+
+Para esse código, no início são impressas as prioridades e tempos de suspensão determinados para cada uma das threas. Além disso, implementei o logging de forma que possa se analisar quando cada thread começou a ser executada assim como quando foi terminada, além de calcular os tempos de execução de cada uma.
+
+<img width="600" height="304" alt="Grafico" src="evidencias\Logging.png" />
